@@ -265,7 +265,7 @@ var REGIONS = {
 */
 
 function getGeocodingRegion() {
-  return PropertiesService.getDocumentProperties().getProperty('GEOCODING_REGION') || 'us';
+  return PropertiesService.getDocumentProperties().getProperty('GEOCODING_REGION') || 'ch';
 }
 
 /*
@@ -300,23 +300,29 @@ function addressToPosition() {
   // Must have selected 3 columns (Address, Lat, Lng).
   // Must have selected at least 1 row.
 
-  if (cells.getNumColumns() != 3) {
+  if (cells.getNumColumns() < 4) {
     Logger.log("Must select at least 3 columns: Address, Lat, Lng columns.");
     return;
   }
   
   var addressColumn = 1;
+  var NColumn = addressColumn + 1;
   var addressRow;
   
-  var latColumn = addressColumn + 1;
-  var lngColumn = addressColumn + 2;
+  var latColumn = addressColumn + 2;
+  var lngColumn = addressColumn + 3;
   
   var geocoder = Maps.newGeocoder().setRegion(getGeocodingRegion());
   var location;
   
   for (addressRow = 1; addressRow <= cells.getNumRows(); ++addressRow) {
     var address = cells.getCell(addressRow, addressColumn).getValue();
-    address = address.replace(/'/g, "%27");
+    if(!address||address===""){
+      continue;
+    }
+    var num = cells.getCell(addressRow, NColumn).getValue();
+    if(num){num=','+num+', Geneva'}
+    address = address.replace(/'/g, "%27")+num;
     
     // Geocode the address and plug the lat, lng pair into the 
     // 2nd and 3rd elements of the current range row.
@@ -349,8 +355,8 @@ function positionToAddress() {
   var addressColumn = 1;
   var addressRow;
   
-  var latColumn = addressColumn + 1;
-  var lngColumn = addressColumn + 2;
+  var latColumn = addressColumn + 2;
+  var lngColumn = addressColumn + 3;
   
   var geocoder = Maps.newGeocoder().setRegion(getGeocodingRegion());
   var location;
